@@ -25,18 +25,31 @@ int main( void )
 	if( glewInit() != GLEW_OK )
 		std::cout << "ERROR!! GLEW INIT FAILED" << std::endl;
 
+	float positions[ 6 ] =
+	{
+		-0.5f,  -0.5f,
+		 0.5f,  -0.5f,
+		 0.5f,   0.5f
+	};
+
+
+	// create vertex buffer
+	unsigned int buffer;
+	glGenBuffers( 1, &buffer );
+	glBindBuffer( GL_ARRAY_BUFFER, buffer );
+	glBufferData( GL_ARRAY_BUFFER, 6 * sizeof( float ), positions, GL_STATIC_DRAW );
+
+	// specify layout
+	glEnableVertexAttribArray( 0 );
+	glVertexAttribPointer( 0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof( float ), (const void*) 0 );
+
 	/* Loop until the user closes the window */
 	while( !glfwWindowShouldClose( window ) )
 	{
 		/* Render here */
 		glClear( GL_COLOR_BUFFER_BIT );
 
-		glBegin( GL_TRIANGLES );
-		glVertex2f( -0.5, -0.5 );
-		glVertex2f( 0.0, 0.5 );
-		glVertex2f( 0.5, -0.5 );
 
-		glEnd();
 		/* Swap front and back buffers */
 		glfwSwapBuffers( window );
 
