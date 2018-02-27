@@ -7,7 +7,7 @@
 
 #include "Renderer.h"
 
-Shader::Shader( const std::string & filepath )
+Shader::Shader( const std::string& filepath )
 	: m_FilePath( filepath ), m_RendererID( 0 )
 {
 	ShaderProgramSource source = ParseShader( m_FilePath );
@@ -108,12 +108,17 @@ void Shader::SetUniform1f( const std::string& name, float value )
 	GLCall( glUniform1f( GetUniformLocation( name ), value ) );
 }
 
-void Shader::SetUniform4f( const std::string & name, float v0, float v1, float v2, float v3 )
+void Shader::SetUniform4f( const std::string& name, float v0, float v1, float v2, float v3 )
 {
 	GLCall( glUniform4f( GetUniformLocation( name ), v0, v1, v2, v3 ) );
 }
 
-int Shader::GetUniformLocation( const std::string & name )
+void Shader::SetUniformMat4f( const std::string& name, const glm::mat4& matrix )
+{
+	GLCall( glUniformMatrix4fv( GetUniformLocation( name ), 1, GL_FALSE, &matrix[ 0 ][ 0 ] ) );
+}
+
+int Shader::GetUniformLocation( const std::string& name )
 {
 	if( m_UniformLocationCashe.find( name ) != m_UniformLocationCashe.end() )
 		return m_UniformLocationCashe[ name ];
