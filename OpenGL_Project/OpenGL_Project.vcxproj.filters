@@ -7,6 +7,8 @@
     <ClCompile Include="src\IndexBuffer.cpp" />
     <ClCompile Include="src\VertexArray.cpp" />
     <ClCompile Include="src\Shader.cpp" />
+    <ClCompile Include="src\Texture.cpp" />
+    <ClCompile Include="src\stb_image\vender\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\Basic.shader" />
@@ -18,5 +20,10 @@
     <ClInclude Include="src\VertexArray.h" />
     <ClInclude Include="src\VertexBufferLayout.h" />
     <ClInclude Include="src\Shader.h" />
+    <ClInclude Include="src\Texture.h" />
+    <ClInclude Include="src\stb_image\vender\stb_image.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\textures\minion.png" />
   </ItemGroup>
 </Project>
