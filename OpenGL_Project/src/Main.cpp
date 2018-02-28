@@ -93,9 +93,23 @@ int main( void )
 		Renderer renderer;
 		float r = 0.0f;
 		float increament = 0.05f;
+
+		double lastTime = glfwGetTime();
+		int nbFrames = 0;
+
 		/* Loop until the user closes the window */
 		while( !glfwWindowShouldClose( window ) )
 		{
+			// Measure speed
+			double currentTime = glfwGetTime();
+			nbFrames++;
+			if( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1sec ago
+												 // printf and reset
+				printf( "%f ms/frame\n", 1000.0 / double( nbFrames ) );
+				nbFrames = 0;
+				lastTime += 1.0;
+			}
+
 			/* Render here */
 			renderer.Clear();
 
