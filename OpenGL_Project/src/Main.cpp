@@ -17,6 +17,8 @@
 #include "glm\glm.hpp"
 #include "glm\gtc\matrix_transform.hpp"
 
+#include "FrameTimer.h"
+
 int main( void )
 {
 	GLFWwindow* window;
@@ -81,7 +83,7 @@ int main( void )
 		shader.SetUniform4f( "u_Color", 0.8f, 0.3f, 0.8f, 1.0f );
 		shader.SetUniformMat4f( "u_MVP", proj );
 
-		Texture texture("res/textures/minion.png");
+		Texture texture( "res/textures/minion.png" );
 		texture.Bind();
 		shader.SetUniform1i( "u_Texture", 0 );
 
@@ -95,39 +97,20 @@ int main( void )
 		float increament = 0.05f;
 
 		double lastTime = glfwGetTime();
-		int nbFrames = 0;
+
+		FrameTimer ft;
 
 		/* Loop until the user closes the window */
 		while( !glfwWindowShouldClose( window ) )
 		{
-			// Measure speed
-			double currentTime = glfwGetTime();
-			nbFrames++;
-			if( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1sec ago
-												 // printf and reset
-				printf( "%f ms/frame\n", 1000.0 / double( nbFrames ) );
-				nbFrames = 0;
-				lastTime += 1.0;
-			}
+			std::cout << "time:" << ft.Mark() * 1000 << std::endl;
 
-			/* Render here */
 			renderer.Clear();
 
 			shader.Bind();
-			shader.SetUniform4f( "u_Color", r, 0.3f, 0.8f, 1.0f );
 
 			renderer.Draw( va, ib, shader );
 
-			if( r > 1.0f )
-			{
-				increament = -0.05f;
-			}
-			else if( r < 0.0f )
-			{
-				increament = 0.05f;
-			}
-
-			r += increament;
 
 			/* Swap front and back buffers */
 			glfwSwapBuffers( window );
@@ -139,5 +122,4 @@ int main( void )
 	glfwTerminate();
 	return 0;
 }
-
 // working BOOOOOM
