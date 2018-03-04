@@ -78,7 +78,7 @@ int main( void )
 
 		Shader shader( "res/shaders/Basic.shader" );
 		shader.Bind();
-		shader.SetUniform4f( "u_Color", 0.8f, 0.3f, 0.8f, 1.0f );
+		//shader.SetUniform4f( "u_Color", 0.8f, 0.3f, 0.8f, 1.0f );
 		shader.SetUniformMat4f( "u_MVP", proj );
 
 		Texture texture("res/textures/minion.png");
@@ -114,7 +114,7 @@ int main( void )
 			renderer.Clear();
 
 			shader.Bind();
-			shader.SetUniform4f( "u_Color", r, 0.3f, 0.8f, 1.0f );
+			//shader.SetUniform4f( "u_Color", r, 0.3f, 0.8f, 1.0f );
 
 			renderer.Draw( va, ib, shader );
 
