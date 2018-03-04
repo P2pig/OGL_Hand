@@ -31,9 +31,13 @@ int main( void )
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
 	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
 
+	static constexpr int width = 800;
+	static constexpr int height = 600;
 
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow( 640, 480, "Hello World", NULL, NULL );
+	 window = glfwCreateWindow( width, height, "PlayGround : ) ", NULL, NULL );
+	 //window = glfwCreateWindow( 1920, 1080,  "PlayGround : ) ", glfwGetPrimaryMonitor(), NULL );
+	
 	if( !window )
 	{
 		GLCall( glfwTerminate() );
@@ -42,6 +46,9 @@ int main( void )
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent( window );
+
+	// Ensure we can capture the escape key being pressed below
+	glfwSetInputMode( window, GLFW_STICKY_KEYS, GL_TRUE );
 
 	glfwSwapInterval( 1 );
 
@@ -76,39 +83,40 @@ int main( void )
 
 		IndexBuffer ib( indices, 6 );
 
-		glm::mat4 proj = glm::ortho( -2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f ); // ratio 4:3
+		//glm::mat4 proj = glm::ortho( -4.0f, 4.0f, -3.0f, 3.0f, -1.0f, 1.0f ); // ratio 4:3
+		//glm::mat4 proj = glm::ortho( -10.0f, 10.0f, -10.0f, 10.0f, 0.0f, 100.0f ); // In world coordinates
+		//Projection matrix : 45° Field of View, 4 : 3 ratio, display range : 0.1 unit < -> 100 units
+		glm::mat4 proj = glm::perspective( glm::radians( 45.0f ), 4.0f / 3.0f, 1.0f, 100.0f );
+		
+		glm::mat4 View = glm::lookAt(
+			glm::vec3( 4, 3, 3 ), // Camera is at (4,3,3), in World Space
+			glm::vec3( 0, 0, 0 ), // and looks at the origin
+			glm::vec3( 0, 1, 0 )  // Head is up (set to 0,-1,0 to look upside-down)
+		);
+
+		glm::mat4 Model = glm::mat4( 1.0f );
+
+		glm::mat4 mvp = proj * View * Model;
+
 
 		Shader shader( "res/shaders/Basic.shader" );
 		shader.Bind();
-		shader.SetUniform4f( "u_Color", 0.8f, 0.3f, 0.8f, 1.0f );
-		shader.SetUniformMat4f( "u_MVP", proj );
+		shader.SetUniformMat4f( "u_MVP", mvp );
 
-		Texture texture( "res/textures/minion.png" );
+		//Texture texture( "res/textures/minion.png" );
+		Texture texture( "res/textures/minion - Copy.png" );
 		texture.Bind();
 		shader.SetUniform1i( "u_Texture", 0 );
 
-		va.Unbind();
-		vb.Unbind();
-		ib.Unbind();
-		shader.Unbind();
-
 		Renderer renderer;
-		float r = 0.0f;
-		float increament = 0.05f;
-
-		double lastTime = glfwGetTime();
-
 		FrameTimer ft;
 
 		/* Loop until the user closes the window */
-		while( !glfwWindowShouldClose( window ) )
+		while( !glfwWindowShouldClose( window ) && !glfwGetKey( window, GLFW_KEY_ESCAPE ) )
 		{
-			std::cout << "time:" << ft.Mark() * 1000 << std::endl;
-
 			renderer.Clear();
 
 			shader.Bind();
-
 			renderer.Draw( va, ib, shader );
 
 
