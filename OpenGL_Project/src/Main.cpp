@@ -64,6 +64,44 @@ int main( void )
 			 0.5f,   0.5f,  1.0f,  1.0f,// 2
 			-0.5f,   0.5f,  0.0f,  1.0f // 3
 		};
+		static const GLfloat g_vertex_buffer_data[] = {
+			-1.0f,-1.0f,-1.0f,
+			-1.0f,-1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f,-1.0f,
+			-1.0f,-1.0f,-1.0f,
+			-1.0f, 1.0f,-1.0f,
+			1.0f,-1.0f, 1.0f,
+			-1.0f,-1.0f,-1.0f,
+			1.0f,-1.0f,-1.0f,
+			1.0f, 1.0f,-1.0f,
+			1.0f,-1.0f,-1.0f,
+			-1.0f,-1.0f,-1.0f,
+			-1.0f,-1.0f,-1.0f,
+			-1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f,-1.0f,
+			1.0f,-1.0f, 1.0f,
+			-1.0f,-1.0f, 1.0f,
+			-1.0f,-1.0f,-1.0f,
+			-1.0f, 1.0f, 1.0f,
+			-1.0f,-1.0f, 1.0f,
+			1.0f,-1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f,-1.0f,-1.0f,
+			1.0f, 1.0f,-1.0f,
+			1.0f,-1.0f,-1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f,-1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f,-1.0f,
+			-1.0f, 1.0f,-1.0f,
+			1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f,-1.0f,
+			-1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, 1.0f,
+			1.0f,-1.0f, 1.0f
+		};
 
 		unsigned int indices[] = {
 			0, 1, 2,
@@ -74,28 +112,21 @@ int main( void )
 		GLCall( glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA ) );
 
 		VertexArray va;
-		VertexBuffer vb( positions, 4 * 4 * sizeof( float ) );
+		VertexBuffer vb( positions, 12*3 *3* sizeof( float ) );
 
 		VertexBufferLayout layout;
 		layout.Push<float>( 2 );
-		layout.Push<float>( 2 );
 		va.AddBuffer( vb, layout );
 
-		IndexBuffer ib( indices, 6 );
+		//IndexBuffer ib( indices, 6 );
 
-		//glm::mat4 proj = glm::ortho( -4.0f, 4.0f, -3.0f, 3.0f, -1.0f, 1.0f ); // ratio 4:3
-		//glm::mat4 proj = glm::ortho( -10.0f, 10.0f, -10.0f, 10.0f, 0.0f, 100.0f ); // In world coordinates
-		//Projection matrix : 45° Field of View, 4 : 3 ratio, display range : 0.1 unit < -> 100 units
-		glm::mat4 proj = glm::perspective( glm::radians( 45.0f ), 4.0f / 3.0f, 1.0f, 100.0f );
-		
+		glm::mat4 proj = glm::perspective( glm::radians( 45.0f ), 4.0f / 3.0f, 1.0f, 200.0f );
 		glm::mat4 View = glm::lookAt(
-			glm::vec3( 4, 3, 3 ), // Camera is at (4,3,3), in World Space
+			glm::vec3( 4, 3, 6 ), // Camera is at (4,3,3), in World Space
 			glm::vec3( 0, 0, 0 ), // and looks at the origin
 			glm::vec3( 0, 1, 0 )  // Head is up (set to 0,-1,0 to look upside-down)
 		);
-
 		glm::mat4 Model = glm::mat4( 1.0f );
-
 		glm::mat4 mvp = proj * View * Model;
 
 
@@ -103,13 +134,13 @@ int main( void )
 		shader.Bind();
 		shader.SetUniformMat4f( "u_MVP", mvp );
 
-		//Texture texture( "res/textures/minion.png" );
+		////Texture texture( "res/textures/minion.png" );
 		Texture texture( "res/textures/minion - Copy.png" );
 		texture.Bind();
 		shader.SetUniform1i( "u_Texture", 0 );
 
 		Renderer renderer;
-		FrameTimer ft;
+		//FrameTimer ft;
 
 		/* Loop until the user closes the window */
 		while( !glfwWindowShouldClose( window ) && !glfwGetKey( window, GLFW_KEY_ESCAPE ) )
@@ -117,7 +148,7 @@ int main( void )
 			renderer.Clear();
 
 			shader.Bind();
-			renderer.Draw( va, ib, shader );
+			renderer.Draw( va, sizeof( g_vertex_buffer_data ), shader );
 
 
 			/* Swap front and back buffers */
