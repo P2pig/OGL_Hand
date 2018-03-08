@@ -127,9 +127,8 @@ int main( void )
 
 	std::cout << glGetString( GL_VERSION ) << std::endl;
 
-	// ==================================================================================================
-	float positions[] =
-	{
+
+	float positions[] = {
 		// my cube lalala :D
 		//------------------------------------
 		//			  4----------7
@@ -143,37 +142,58 @@ int main( void )
 
 		// X       Y       Z
 		// 0 ~ 7
-		  -0.5f,   0.5f,   0.5f,
-		  -0.5f,  -0.5f,   0.5f,
-		   0.5f,  -0.5f,   0.5f,
-		   0.5f,   0.5f,   0.5f,
-
 		  -0.5f,   0.5f,  -0.5f,
 		  -0.5f,  -0.5f,  -0.5f,
 		   0.5f,  -0.5f,  -0.5f,
-		   0.5f,   0.5f,  -0.5f
+		   0.5f,   0.5f,  -0.5f,
+
+		  -0.5f,   0.5f,   0.5f,
+		  -0.5f,  -0.5f,   0.5f,
+		   0.5f,  -0.5f,   0.5f,
+		   0.5f,   0.5f,   0.5f
+		   ,
+		//  R	  G		B	  A
+			1.0f, 1.0f, 1.0f, 1.0f, // 0
+			0.0f, 1.0f, 0.0f, 1.0f, // 1
+			0.0f, 0.0f, 1.0f, 1.0f, // 2
+			1.0f, 0.0f, 0.0f, 1.0f, // 3
+			0.0f, 0.0f, 1.0f, 1.0f, // 4
+			1.0f, 0.0f, 0.0f, 1.0f, // 5
+			1.0f, 1.0f, 1.0f, 1.0f, // 6
+			0.0f, 1.0f, 0.0f, 1.0f  // 7
+	};
+
+	float colors[] = {
+		//  R	  G		B	  A
+		1.0f, 1.0f, 1.0f, 0.0f, // 0
+		0.0f, 1.0f, 0.0f, 0.0f, // 1
+		0.0f, 0.0f, 1.0f, 0.0f, // 2
+		1.0f, 0.0f, 0.0f, 0.0f, // 3
+		0.0f, 0.0f, 1.0f, 0.0f, // 4
+		1.0f, 0.0f, 0.0f, 0.0f, // 5
+		1.0f, 1.0f, 1.0f, 0.0f, // 6
+		0.0f, 1.0f, 0.0f, 0.0f  // 7
 	};
 
 	unsigned int indices[] = {
 		// front & back
 		0, 1, 2,
-		0, 3, 2,
+		0, 2, 3,
 		4, 5, 6,
-		4, 7, 6,
+		4, 6, 7,
 
 		// top & bot
 		4, 0, 3,
-		4, 7, 3,
+		4, 3, 7,
 		5, 1, 2,
-		5, 6, 2,
+		5, 2, 6,
 
 		// lef & right
-		0, 1, 5,
 		0, 4, 5,
-		3, 2, 6,
-		3, 7, 6
+		0, 5, 1,
+		3, 7, 6,
+		3, 6, 2
 	};
-
 
 	unsigned int vao;
 	glGenVertexArrays( 1, &vao );
@@ -182,24 +202,34 @@ int main( void )
 	unsigned int vbo;
 	glGenBuffers( 1, &vbo );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo );
-	glBufferData( GL_ARRAY_BUFFER, 8 * 3 * sizeof( float ), positions, GL_STATIC_DRAW ); // 8 vertices
+	glBufferData( GL_ARRAY_BUFFER, 8 * 3 * sizeof( float ), &positions[ 0 ], GL_STATIC_DRAW );
 
 	glEnableVertexAttribArray( 0 );
-	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( float ), 0 );
+	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( float ), (const void*) 0 );
+
+	unsigned int vColor;
+	glGenBuffers( 1, &vColor );
+	glBindBuffer( GL_ARRAY_BUFFER, vColor );
+	glBufferData( GL_ARRAY_BUFFER, 4 * 8 * sizeof( float ), &positions[ 24 ], GL_STATIC_DRAW );
+
+	glEnableVertexAttribArray( 1 );
+	glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof( float ), (const void*) 0 );
 
 	unsigned int ibo;
 	glGenBuffers( 1, &ibo );
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo );
-	glBufferData( GL_ELEMENT_ARRAY_BUFFER, 12 * 3 * sizeof( unsigned int ), indices, GL_STATIC_DRAW );
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, 2 * 3 * 6 * sizeof( unsigned int ), &indices[ 0 ], GL_STATIC_DRAW );
 
 	ShaderProgramSource source = ParseShader( "res/shaders/Basic.shader" );
 
 	unsigned int shader = CreateShader( source.VertexSource, source.FragmentSource );
 	glUseProgram( shader );
+	
+	glEnable( GL_DEPTH_TEST );
 
 	while( !glfwWindowShouldClose( window ) && !glfwGetKey( window, GLFW_KEY_ESCAPE ) )
 	{
-		glClear( GL_COLOR_BUFFER_BIT );
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 
 		glDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr );
