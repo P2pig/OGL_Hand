@@ -6,8 +6,15 @@
 #include <string>
 #include <sstream>
 
+#include "glm\glm.hpp"
+#include "glm\gtc\matrix_transform.hpp"
+
 #include "PropertyInfo.h"
-#include "vendor\glm\glm.hpp"
+#include "Primitives\Vertex.h"
+
+#define GLCall(x) GLClearError();\
+	x;\
+	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
 
 static void GLClearError()
 {
@@ -121,11 +128,12 @@ int main( void )
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent( window );
-
 	glfwSwapInterval( 1 );
+
 
 	if( glewInit() != GLEW_OK )
 		std::cout << "ERROR!! GLEW INIT FAILED" << std::endl;
+
 
 	_INFO_COMPILER();
 	_INFO_OPENGL();
@@ -144,15 +152,15 @@ int main( void )
 
 		// X       Y       Z
 		// 0 ~ 7
-		  -0.5f,   0.5f,  -0.5f,
-		  -0.5f,  -0.5f,  -0.5f,
-		   0.5f,  -0.5f,  -0.5f,
-		   0.5f,   0.5f,  -0.5f,
-
 		  -0.5f,   0.5f,   0.5f,
 		  -0.5f,  -0.5f,   0.5f,
 		   0.5f,  -0.5f,   0.5f,
-		   0.5f,   0.5f,   0.5f
+		   0.5f,   0.5f,   0.5f,
+
+		  -0.5f,   0.5f,  -0.5f,
+		  -0.5f,  -0.5f,  -0.5f,
+		   0.5f,  -0.5f,  -0.5f,
+		   0.5f,   0.5f,  -0.5f
 		   ,
 		//  R	  G		B	  A
 			1.0f, 1.0f, 1.0f, 1.0f, // 0
@@ -226,6 +234,10 @@ int main( void )
 
 	unsigned int shader = CreateShader( source.VertexSource, source.FragmentSource );
 	glUseProgram( shader );
+
+	glm::mat4 proj = glm::ortho( -2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f ); // ratio 4:3
+
+	glUniformMatrix4fv( glGetUniformLocation( shader, "proj" ), 1, 0, &proj[0][0] );
 
 	glEnable( GL_DEPTH_TEST );
 

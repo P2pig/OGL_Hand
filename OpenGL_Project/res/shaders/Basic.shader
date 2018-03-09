@@ -4,11 +4,13 @@
 layout( location = 0 ) in vec4 position;
 layout( location = 1 ) in vec4 vertex_color;
 
+uniform mat4 proj;
+
 out vec4 fragColor;
 
 void main()
 {
-	gl_Position = position;
+	gl_Position = proj *position;
 	fragColor = vertex_color;
 };
 
