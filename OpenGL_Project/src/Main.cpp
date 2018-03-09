@@ -6,6 +6,9 @@
 #include <string>
 #include <sstream>
 
+#include "PropertyInfo.h"
+#include "vendor\glm\glm.hpp"
+
 static void GLClearError()
 {
 	while( glGetError() != GL_NO_ERROR );
@@ -95,7 +98,6 @@ static unsigned int CreateShader( const std::string& vertexShader, const std::st
 	return program;
 }
 
-
 int main( void )
 {
 	GLFWwindow* window;
@@ -125,8 +127,8 @@ int main( void )
 	if( glewInit() != GLEW_OK )
 		std::cout << "ERROR!! GLEW INIT FAILED" << std::endl;
 
-	std::cout << glGetString( GL_VERSION ) << std::endl;
-
+	_INFO_COMPILER();
+	_INFO_OPENGL();
 
 	float positions[] = {
 		// my cube lalala :D
@@ -224,7 +226,7 @@ int main( void )
 
 	unsigned int shader = CreateShader( source.VertexSource, source.FragmentSource );
 	glUseProgram( shader );
-	
+
 	glEnable( GL_DEPTH_TEST );
 
 	while( !glfwWindowShouldClose( window ) && !glfwGetKey( window, GLFW_KEY_ESCAPE ) )
