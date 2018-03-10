@@ -10,7 +10,7 @@ out vec4 fragColor;
 
 void main()
 {
-	gl_Position = mvp *position;
+	gl_Position = mvp * position;
 	fragColor = vertex_color;
 };
 
