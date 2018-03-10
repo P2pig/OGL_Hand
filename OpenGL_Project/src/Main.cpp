@@ -10,11 +10,13 @@
 #include "glm\gtc\matrix_transform.hpp"
 
 #include "PropertyInfo.h"
-#include "Primitives\Vertex.h"
 
 #define GLCall(x) GLClearError();\
 	x;\
 	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+
+unsigned int ActiveIndexBuffer = 0;
+unsigned int ibo[2];
 
 static void GLClearError()
 {
@@ -117,9 +119,10 @@ int main( void )
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
 	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
 
-
+	static unsigned int _SCREEN_WIDTH = 800;
+	static unsigned int _SCREEN_HIGHT = 600;
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow( 640, 480, "Hello World", NULL, NULL );
+	window = glfwCreateWindow( _SCREEN_WIDTH, _SCREEN_HIGHT, "Hello World", NULL, NULL );
 	if( !window )
 	{
 		glfwTerminate();
@@ -128,81 +131,84 @@ int main( void )
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent( window );
-	glfwSwapInterval( 1 );
 
+	glfwSwapInterval( 1 );
 
 	if( glewInit() != GLEW_OK )
 		std::cout << "ERROR!! GLEW INIT FAILED" << std::endl;
 
-
 	_INFO_COMPILER();
 	_INFO_OPENGL();
 
-	float positions[] = {
-		// my cube lalala :D
-		//------------------------------------
-		//			  4----------7
-		//			 /|         /|
-		//			0----------3 |
-		//			| |        | |
-		//			| 5--------|-6
-		//			|/         |/
-		//			1----------2
-		//------------------------------------
 
-		// X       Y       Z
-		// 0 ~ 7
-		  -0.5f,   0.5f,   0.5f,
-		  -0.5f,  -0.5f,   0.5f,
-		   0.5f,  -0.5f,   0.5f,
-		   0.5f,   0.5f,   0.5f,
-
-		  -0.5f,   0.5f,  -0.5f,
-		  -0.5f,  -0.5f,  -0.5f,
-		   0.5f,  -0.5f,  -0.5f,
-		   0.5f,   0.5f,  -0.5f
-		   ,
-		//  R	  G		B	  A
-			1.0f, 1.0f, 1.0f, 1.0f, // 0
-			0.0f, 1.0f, 0.0f, 1.0f, // 1
-			0.0f, 0.0f, 1.0f, 1.0f, // 2
-			1.0f, 0.0f, 0.0f, 1.0f, // 3
-			0.0f, 0.0f, 1.0f, 1.0f, // 4
-			1.0f, 0.0f, 0.0f, 1.0f, // 5
-			1.0f, 1.0f, 1.0f, 1.0f, // 6
-			0.0f, 1.0f, 0.0f, 1.0f  // 7
+	typedef struct Vertex {
+		float XYZW[ 4 ];
+		float RGBA[ 4 ];
 	};
 
-	float colors[] = {
-		//  R	  G		B	  A
-		1.0f, 1.0f, 1.0f, 0.0f, // 0
-		0.0f, 1.0f, 0.0f, 0.0f, // 1
-		0.0f, 0.0f, 1.0f, 0.0f, // 2
-		1.0f, 0.0f, 0.0f, 0.0f, // 3
-		0.0f, 0.0f, 1.0f, 0.0f, // 4
-		1.0f, 0.0f, 0.0f, 0.0f, // 5
-		1.0f, 1.0f, 1.0f, 0.0f, // 6
-		0.0f, 1.0f, 0.0f, 0.0f  // 7
+	Vertex Vertices[] =	{
+		{ { 0.0f, 0.0f, 0.0f, 1.0f },{ 1.0f, 1.0f, 1.0f, 1.0f } },
+		// Top
+		{ { -0.2f, 0.8f, 0.0f, 1.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
+		{ { 0.2f, 0.8f, 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
+		{ { 0.0f, 0.8f, 0.0f, 1.0f },{ 0.0f, 1.0f, 1.0f, 1.0f } },
+		{ { 0.0f, 1.0f, 0.0f, 1.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
+		// Bottom
+		{ { -0.2f, -0.8f, 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
+		{ { 0.2f, -0.8f, 0.0f, 1.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
+		{ { 0.0f, -0.8f, 0.0f, 1.0f },{ 0.0f, 1.0f, 1.0f, 1.0f } },
+		{ { 0.0f, -1.0f, 0.0f, 1.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
+		// Left
+		{ { -0.8f, -0.2f, 0.0f, 1.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
+		{ { -0.8f, 0.2f, 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
+		{ { -0.8f, 0.0f, 0.0f, 1.0f },{ 0.0f, 1.0f, 1.0f, 1.0f } },
+		{ { -1.0f, 0.0f, 0.0f, 1.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } },
+		// Right
+		{ { 0.8f, -0.2f, 0.0f, 1.0f },{ 0.0f, 0.0f, 1.0f, 1.0f } },
+		{ { 0.8f, 0.2f, 0.0f, 1.0f },{ 0.0f, 1.0f, 0.0f, 1.0f } },
+		{ { 0.8f, 0.0f, 0.0f, 1.0f },{ 0.0f, 1.0f, 1.0f, 1.0f } },
+		{ { 1.0f, 0.0f, 0.0f, 1.0f },{ 1.0f, 0.0f, 0.0f, 1.0f } }
 	};
 
-	unsigned int indices[] = {
-		// front & back
-		0, 1, 2,
-		0, 2, 3,
-		4, 5, 6,
-		4, 6, 7,
+	unsigned int Indices[] = {
+		// Top
+		0, 1, 3,
+		0, 3, 2,
+		3, 1, 4,
+		3, 4, 2,
+		// Bottom
+		0, 5, 7,
+		0, 7, 6,
+		7, 5, 8,
+		7, 8, 6,
+		// Left
+		0, 9, 11,
+		0, 11, 10,
+		11, 9, 12,
+		11, 12, 10,
+		// Right
+		0, 13, 15,
+		0, 15, 14,
+		15, 13, 16,
+		15, 16, 14
+	};
 
-		// top & bot
-		4, 0, 3,
-		4, 3, 7,
-		5, 1, 2,
-		5, 2, 6,
+	unsigned int AlternateIndices[] = {
+		// Outer square border:
+		3, 4, 16,
+		3, 15, 16,
+		15, 16, 8,
+		15, 7, 8,
+		7, 8, 12,
+		7, 11, 12,
+		11, 12, 4,
+		11, 3, 4,
 
-		// lef & right
-		0, 4, 5,
-		0, 5, 1,
-		3, 7, 6,
-		3, 6, 2
+		// Inner square
+		0, 11, 3,
+		0, 3, 15,
+		0, 15, 7,
+		0, 7, 11
 	};
 
 	unsigned int vao;
@@ -212,32 +218,47 @@ int main( void )
 	unsigned int vbo;
 	glGenBuffers( 1, &vbo );
 	glBindBuffer( GL_ARRAY_BUFFER, vbo );
-	glBufferData( GL_ARRAY_BUFFER, 8 * 3 * sizeof( float ), &positions[ 0 ], GL_STATIC_DRAW );
+	glBufferData( GL_ARRAY_BUFFER, sizeof( Vertices ), Vertices, GL_STATIC_DRAW );
 
 	glEnableVertexAttribArray( 0 );
-	glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof( float ), (const void*) 0 );
-
-	unsigned int vColor;
-	glGenBuffers( 1, &vColor );
-	glBindBuffer( GL_ARRAY_BUFFER, vColor );
-	glBufferData( GL_ARRAY_BUFFER, 4 * 8 * sizeof( float ), &positions[ 24 ], GL_STATIC_DRAW );
-
 	glEnableVertexAttribArray( 1 );
-	glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof( float ), (const void*) 0 );
 
-	unsigned int ibo;
-	glGenBuffers( 1, &ibo );
-	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo );
-	glBufferData( GL_ELEMENT_ARRAY_BUFFER, 2 * 3 * 6 * sizeof( unsigned int ), &indices[ 0 ], GL_STATIC_DRAW );
+	glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, sizeof( Vertex ), 0 );
+	glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, sizeof( Vertex ), (const void*) sizeof( Vertices->XYZW ) );
+
+
+	glGenBuffers( 2, ibo );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo[0] );
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( Indices ), Indices, GL_STATIC_DRAW );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo[ 1 ] );
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( AlternateIndices ), AlternateIndices, GL_STATIC_DRAW );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo[ 0 ] );
+
 
 	ShaderProgramSource source = ParseShader( "res/shaders/Basic.shader" );
 
 	unsigned int shader = CreateShader( source.VertexSource, source.FragmentSource );
 	glUseProgram( shader );
 
-	glm::mat4 proj = glm::ortho( -2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f ); // ratio 4:3
+	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+	glm::mat4 Projection = glm::perspective( glm::radians( 45.0f ), (float) _SCREEN_WIDTH / (float) _SCREEN_HIGHT, 0.1f, 100.0f );
 
-	glUniformMatrix4fv( glGetUniformLocation( shader, "proj" ), 1, 0, &proj[0][0] );
+	// Or, for an ortho camera :
+	//glm::mat4 Projection = glm::ortho(-10.0f,10.0f,-10.0f,10.0f,0.0f,100.0f); // In world coordinates
+
+	// Camera matrix
+	glm::mat4 View = glm::lookAt(
+		glm::vec3( 0, 4, 5 ), // Camera is at (4,3,3), in World Space
+		glm::vec3( 0, 0, 0 ), // and looks at the origin
+		glm::vec3( 0, 1, 0 )  // Head is up (set to 0,-1,0 to look upside-down)
+	);
+
+	// Model matrix : an identity matrix (model will be at the origin)
+	glm::mat4 Model = glm::mat4( 1.0f );
+	// Our ModelViewProjection : multiplication of our 3 matrices
+	glm::mat4 mvp = Projection * View * Model; // Remember, matrix multiplication is the other way around
+
+	glUniformMatrix4fv( glGetUniformLocation( shader, "mvp" ), 1, 0, &mvp[ 0 ][ 0 ] );
 
 	glEnable( GL_DEPTH_TEST );
 
@@ -245,18 +266,35 @@ int main( void )
 	{
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+		//glDrawElements( GL_TRIANGLES, sizeof(Indices)/sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
 
-		glDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr );
+		if( ActiveIndexBuffer == 0 ) {
+			glDrawElements( GL_TRIANGLES, 48, GL_UNSIGNED_INT, NULL );
+			
+			glPointSize( 10 );
+			glDrawElements( GL_POINTS, 48, GL_UNSIGNED_INT, NULL );
+		}
+		else {
+			glDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL );
+		}
 
+		if( glfwGetKey( window, GLFW_KEY_T ) )
+		{
+			ActiveIndexBuffer = (ActiveIndexBuffer == 1 ? 0 : 1);
+			glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo[ ActiveIndexBuffer ] );
+		}
 
 		glfwSwapBuffers( window );
 		glfwPollEvents();
 	}
+
+	glBindVertexArray( 0 );
 
 	glDeleteProgram( shader );
 
 	glfwTerminate();
 	return 0;
 }
+
 
 // working BOOOOOM
