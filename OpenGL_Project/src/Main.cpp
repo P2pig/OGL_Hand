@@ -11,6 +11,7 @@
 
 #include "PropertyInfo.h"
 #include "Primitives\Vertex.h"
+#include "Primitives\FrameTimer.h"
 
 #define GLCall(x) GLClearError();\
 	x;\
@@ -128,11 +129,11 @@ int main( void )
 	/* Make the window's context current */
 	glfwMakeContextCurrent( window );
 
-	glfwSwapInterval( 1 );
-
+	/* Initialize GLEW */
 	if( glewInit() != GLEW_OK )
 		std::cout << "ERROR!! GLEW INIT FAILED" << std::endl;
 
+	glfwSwapInterval( 1 );
 	glEnable( GL_DEPTH_TEST );
 	_INFO_COMPILER();
 	_INFO_OPENGL();
@@ -224,7 +225,7 @@ int main( void )
 
 		double lastTime = glfwGetTime();
 		int nbFrames = 0;
-
+		FrameTimer ft;
 	while( !glfwWindowShouldClose( window ) && !glfwGetKey( window, GLFW_KEY_ESCAPE ) )
 	{
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );

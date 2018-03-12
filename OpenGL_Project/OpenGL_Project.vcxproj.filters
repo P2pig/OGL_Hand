@@ -265,5 +265,6 @@
     <ClInclude Include="src\vendor\glm\vector_relational.hpp" />
     <ClInclude Include="src\PropertyInfo.h" />
     <ClInclude Include="src\Primitives\Vertex.h" />
+    <ClInclude Include="src\Primitives\FrameTimer.h" />
   </ItemGroup>
 </Project>

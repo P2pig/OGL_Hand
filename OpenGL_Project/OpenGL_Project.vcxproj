@@ -137,6 +137,7 @@
     <None Include="src\vendor\glm\gtx\wrap.inl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Primitives\FrameTimer.h" />
     <ClInclude Include="src\Primitives\Vertex.h" />
     <ClInclude Include="src\PropertyInfo.h" />
     <ClInclude Include="src\vendor\glm\common.hpp" />
