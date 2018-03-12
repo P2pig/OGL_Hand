@@ -10,6 +10,7 @@
 #include "glm\gtc\matrix_transform.hpp"
 
 #include "PropertyInfo.h"
+#include "Primitives\Vertex.h"
 
 #define GLCall(x) GLClearError();\
 	x;\
@@ -135,12 +136,6 @@ int main( void )
 	glEnable( GL_DEPTH_TEST );
 	_INFO_COMPILER();
 	_INFO_OPENGL();
-
-
-	typedef struct Vertex {
-		glm::vec4 XYZW;
-		glm::vec4 RGBA;
-	};
 
 	Vertex Vertices[] =	{
 		//------------------------------------
