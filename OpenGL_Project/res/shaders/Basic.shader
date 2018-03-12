@@ -4,13 +4,15 @@
 layout( location = 0 ) in vec4 position;
 layout( location = 1 ) in vec4 vertex_color;
 
-uniform mat4 MVP;
+uniform mat4 Camera;
+uniform mat4 TMatrix;
+uniform mat4 RMatrix;
 
 out vec4 fragColor;
 
 void main()
 {
-	gl_Position = MVP * position;
+	gl_Position = Camera * TMatrix * RMatrix* position;
 	fragColor = vertex_color;
 };
 

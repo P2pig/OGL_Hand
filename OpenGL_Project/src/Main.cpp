@@ -208,31 +208,51 @@ int main( void )
 	unsigned int shader = CreateShader( source.VertexSource, source.FragmentSource );
 	glUseProgram( shader );
 
-	{
+		float degree = 0;
 		using namespace glm;
-		mat4 TMatrix = translate( mat4( 1.0f ), vec3( 0.0f, 0.0f, -2.0f ) );
-		mat4 RMatrix = rotate( mat4(), 60.0f, vec3( 1.0f, 0.0f, 0.0f ) );
+		mat4 TMatrix = translate( mat4( 1.0f ), vec3( 0.0f, 0.0f, 0.0f ) );
+		mat4 RMatrix = rotate(mat4(1.0f), 45.0f+degree, vec3( 0.1f, 0.1f, 0.0f ) );
 		mat4 Projection = perspective( radians( 60.0f ), 4.0f / 3.0f, 0.1f, 100.0f );
+		mat4 View = lookAt(
+			vec3( 0, 0, 3 ), // Camera is at (4,3,3), in World Space
+			vec3( 0, 0, 0 ), // and looks at the origin
+			vec3( 0, 1, 0 )  // Head is up (set to 0,-1,0 to look upside-down)
+		);
+		
+		mat4 Camera = Projection * View;
+		
+		
+		glUniformMatrix4fv( glGetUniformLocation( shader, "Camera" ), 1, 0, &Camera[ 0 ][ 0 ] );
+		glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
+		glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
 
-		mat4 fullTMatrix = Projection * TMatrix * RMatrix;
-		//mat4 View = lookAt(
-		//	vec3( 0, 0, 10 ), // Camera is at (4,3,3), in World Space
-		//	vec3( 0, 0, 0 ), // and looks at the origin
-		//	vec3( 0, 1, 0 )  // Head is up (set to 0,-1,0 to look upside-down)
-		//);
 
-		glUniformMatrix4fv( glGetUniformLocation( shader, "MVP" ), 1, 0, &fullTMatrix[ 0 ][ 0 ] );
-	}
-
-
+		double lastTime = glfwGetTime();
+		int nbFrames = 0;
 
 	while( !glfwWindowShouldClose( window ) && !glfwGetKey( window, GLFW_KEY_ESCAPE ) )
 	{
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-		//glDrawElements( GL_TRIANGLES, sizeof(Indices)/sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
+		if( true)
+		{
+			degree += 0.1;
+			RMatrix = rotate( mat4( 1.0f ), 45.0f + degree, vec3( 0.1f, 0.2f, -0.3f ) );
+			glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
 
-			glDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL );
+		}
+		glDrawElements( GL_TRIANGLES, sizeof(Indices)/sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
+		//glDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL );
+
+		// Measure speed
+		double currentTime = glfwGetTime();
+		nbFrames++;
+		if( currentTime - lastTime >= 1.0 ){ // If last prinf() was more than 1 sec ago
+											 // printf and reset timer
+			printf( "%f ms/frame\n", double( nbFrames ) );
+			nbFrames = 0;
+			lastTime += 1.0;
+		}
 
 		glfwSwapBuffers( window );
 		glfwPollEvents();
