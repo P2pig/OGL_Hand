@@ -12,6 +12,7 @@
 #include "PropertyInfo.h"
 #include "Primitives\Vertex.h"
 #include "Primitives\FrameTimer.h"
+#include "Camera.h"
 
 #define GLCall(x) GLClearError();\
 	x;\
@@ -138,7 +139,7 @@ int main( void )
 	_INFO_COMPILER();
 	_INFO_OPENGL();
 
-	Vertex Vertices[] =	{
+	Vertex Vertices[] = {
 		//------------------------------------
 		//		     4----------7
 		//		    /|         /|
@@ -150,12 +151,12 @@ int main( void )
 		//------------------------------------
 		glm::vec4( -0.5f, 0.5f, 0.5f, 1.0f ), glm::vec4( 1.0f, 1.0f, 1.0f, 0.0f ), // 0
 		glm::vec4( -0.5f,-0.5f, 0.5f, 1.0f ), glm::vec4( 0.0f, 1.0f, 0.0f, 0.0f ), // 1
-		glm::vec4(  0.5f,-0.5f, 0.5f, 1.0f ), glm::vec4( 0.0f, 0.0f, 1.0f, 0.0f ), // 2
-		glm::vec4(  0.5f, 0.5f, 0.5f, 1.0f ), glm::vec4( 1.0f, 0.0f, 0.0f, 0.0f ), // 3
+		glm::vec4( 0.5f,-0.5f, 0.5f, 1.0f ), glm::vec4( 0.0f, 0.0f, 1.0f, 0.0f ), // 2
+		glm::vec4( 0.5f, 0.5f, 0.5f, 1.0f ), glm::vec4( 1.0f, 0.0f, 0.0f, 0.0f ), // 3
 		glm::vec4( -0.5f, 0.5f,-0.5f, 1.0f ), glm::vec4( 0.0f, 0.0f, 1.0f, 0.0f ), // 4
 		glm::vec4( -0.5f,-0.5f,-0.5f, 1.0f ), glm::vec4( 1.0f, 0.0f, 0.0f, 0.0f ), // 5
-		glm::vec4(  0.5f,-0.5f,-0.5f, 1.0f ), glm::vec4( 1.0f, 1.0f, 1.0f, 0.0f ), // 6
-		glm::vec4(  0.5f, 0.5f,-0.5f, 1.0f ), glm::vec4( 0.0f, 1.0f, 0.0f, 0.0f )  // 7
+		glm::vec4( 0.5f,-0.5f,-0.5f, 1.0f ), glm::vec4( 1.0f, 1.0f, 1.0f, 0.0f ), // 6
+		glm::vec4( 0.5f, 0.5f,-0.5f, 1.0f ), glm::vec4( 0.0f, 1.0f, 0.0f, 0.0f )  // 7
 	};
 
 	unsigned int Indices[] = {
@@ -204,42 +205,36 @@ int main( void )
 	unsigned int shader = CreateShader( source.VertexSource, source.FragmentSource );
 	glUseProgram( shader );
 
-		float degree = 0;
-		using namespace glm;
+	float degree = 0;
+	using namespace glm;
 
-		double lastTime = glfwGetTime();
-		int nbFrames = 0;
-		FrameTimer ft;
-		float z1 = 0.0f;
-		float z2 = 0.0f;
-		float z3 = 0.0f;
+	double lastTime = glfwGetTime();
+	int nbFrames = 0;
+	FrameTimer ft;
+	float z1 = 0.0f;
+	float z2 = 0.0f;
+	float z3 = 0.0f;
 
 
-		float speed1 = 1.1f;
-		float speed2 = 1.0f;
-		float speed3 = 1.5f;
+	float speed1 = 1.1f;
+	float speed2 = 1.0f;
+	float speed3 = 1.5f;
+
+	int t = 0;
+	Camera camera;
+	glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
 	while( !glfwWindowShouldClose( window ) && !glfwGetKey( window, GLFW_KEY_ESCAPE ) )
 	{
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		double xpos, ypos;
+		glfwGetCursorPos( window, &xpos, &ypos );
+
+		std::cout << "x: " << xpos << ", y: " << ypos << std::endl;
+
+		camera.MouseUpdate( vec2( xpos, ypos ) );
+
 		// cube:1
-
-
-		if( z1 > 10 )
-			speed1 = -speed1;
-		if( z1 < -150 )
-			speed1 = -speed1;
-
-		if( z2 > 10 )
-			speed2 = -speed2;
-		if( z2 < -150 )
-			speed2 = -speed2;
-
-		if( z3 > 10 )
-			speed3 = -speed3;
-		if( z3 < -150 )
-			speed3 = -speed3;
-
-		mat4 TMatrix = translate( mat4( 1.0f ), vec3( 0.0f, 0.0f, z1 +0.0f ) );
+		mat4 TMatrix = translate( mat4( 1.0f ), vec3( 0.0f, 0.0f, z1 + 0.0f ) );
 		mat4 RMatrix = rotate( mat4( 1.0f ), 45.0f + degree, vec3( 0.1f, 0.1f, 0.0f ) );
 		mat4 Projection = perspective( radians( 60.0f ), 4.0f / 3.0f, 0.1f, 100.0f );
 		mat4 View = lookAt(
@@ -248,47 +243,80 @@ int main( void )
 			vec3( 0, 1, 0 )  // Head is up (set to 0,-1,0 to look upside-down)
 		);
 
-		mat4 Camera = Projection * View;
+		mat4 Camera = Projection * camera.GetMatrix();
+		mat4 fullTransform = Camera * TMatrix * RMatrix;
 
-
-		glUniformMatrix4fv( glGetUniformLocation( shader, "Camera" ), 1, 0, &Camera[ 0 ][ 0 ] );
-		glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
-		glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
-
-		glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
-
-		// cube:2
-		TMatrix = translate( mat4( 1.0f ), vec3( 3.0f, 0.0f, z2 + 30.0f ) );
-		RMatrix = rotate( mat4( 1.0f ), 45.0f-degree, vec3( 0.1f, 0.0f, 0.0f ) );
-
-
-		glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
-		glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
-
+		//glUniformMatrix4fv( glGetUniformLocation( shader, "Camera" ), 1, 0, &Camera[ 0 ][ 0 ] );
+		//glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
+		//glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
+		glUniformMatrix4fv( glGetUniformLocation( shader, "fullTransform" ), 1, 0, &fullTransform[ 0 ][ 0 ] );
 
 		glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
-
-
-		// cube:3
-
-		TMatrix = translate( mat4( 1.0f ), vec3( -5.0f, 2.5f,  z2) );
-		RMatrix = rotate( mat4( 1.0f ), (45.0f - degree*2.0f), vec3( 0.5f, -0.075f, 0.0f ) );
-
-
-		glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
-		glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
-
-
-		glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
-
-
-		degree += 0.1;
-		RMatrix = rotate( mat4( 1.0f ), 45.0f + degree, vec3( 0.1f, 0.2f, 0.0f ) );
-		glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
 
 		z1 += speed1;
-		z2 += speed2;
-		z3 += speed3;
+		if( z1 > 10 || z1 < -150 )
+			speed1 = -speed1;
+
+		degree += 0.2;
+		if( degree > 360 )
+			degree = 0;
+
+
+		// Key Press Q, W, SPACE
+		//if( glfwGetKey( window, GLFW_KEY_W ) )
+		//{
+		//	t = -1;
+		//	printf( "t: %i \n", t );
+		//}
+		//if( glfwGetKey( window, GLFW_KEY_Q ) )
+		//{
+		//	t = 1;
+		//	printf( "t: %i \n", t );
+		//}
+		//if( glfwGetKey( window, GLFW_KEY_SPACE ) )
+		//{
+		//	t = 0;
+		//	printf( "t: %i \n", t );
+		//}
+
+		/*
+			// cube:2
+			TMatrix = translate( mat4( 1.0f ), vec3( 3.0f, 0.0f, z2 + 30.0f ) );
+			RMatrix = rotate( mat4( 1.0f ), 45.0f-degree, vec3( 0.1f, 0.0f, 0.0f ) );
+
+
+			glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
+			glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
+
+
+			glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
+
+
+			// cube:3
+
+			TMatrix = translate( mat4( 1.0f ), vec3( -5.0f, 2.5f,  z2) );
+			RMatrix = rotate( mat4( 1.0f ), (45.0f - degree*2.0f), vec3( 0.5f, -0.075f, 0.0f ) );
+
+
+			glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
+			glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
+
+
+			glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
+
+
+			degree += 0.1;
+			RMatrix = rotate( mat4( 1.0f ), 45.0f + degree, vec3( 0.1f, 0.2f, 0.0f ) );
+			glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
+
+			if( z2 > 10 || z2 < -150 )
+				speed2 = -speed2;
+			z2 += speed2;
+
+			if( z3 > 10 || z3 < -150 )
+				speed3 = -speed3;
+			z3 += speed3;
+		*/
 
 		// Measure speed
 		double currentTime = glfwGetTime();

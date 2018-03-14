@@ -7,12 +7,12 @@ layout( location = 1 ) in vec4 vertex_color;
 uniform mat4 Camera;
 uniform mat4 TMatrix;
 uniform mat4 RMatrix;
-
+uniform mat4 fullTransform;
 out vec4 fragColor;
 
 void main()
 {
-	gl_Position = Camera * TMatrix * RMatrix* position;
+	gl_Position = fullTransform * position;
 	fragColor = vertex_color;
 };
 
