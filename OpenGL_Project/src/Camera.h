@@ -9,9 +9,16 @@ private:
 	glm::vec3 viewDirection;  //the point where we look at
 	glm::vec3 UP;             //the vector of upwords(your head is up)
 	glm::vec2 mousePos_old;
-	float sensitivity = 0.0005f;
+	float mouse_Sensitivity = 0.0005f;
+	const float moveSpeed = 0.5f;
 public:
 	Camera();
 	void MouseUpdate( const glm::vec2& _mPosition );
 	glm::mat4 GetMatrix() const;
+	void moveFoward();
+	void moveBackward();
+	void strafeLeft();
+	void strafeRight();
+	void moveUp();
+	void moveDown();
 };
