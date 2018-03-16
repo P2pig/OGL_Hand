@@ -19,6 +19,8 @@
 	x;\
 	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
 
+void checkKeyState( GLFWwindow* window );
+
 static void GLClearError()
 {
 	while( glGetError() != GL_NO_ERROR );
@@ -230,25 +232,15 @@ int main( void )
 	mat4 Projection;
 
 	float time;
-	double lastTime;
 	int nbframes = 0;
-	double lasttime = glfwGetTime();
 
+
+	double lastTime = glfwGetTime();
 
 	glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
 	while( !glfwWindowShouldClose( window ) && !glfwGetKey( window, GLFW_KEY_ESCAPE ) )
 	{
-
-		// Measure speed
-		double currentTime = glfwGetTime();
-		nbframes++;
-		time = currentTime - lasttime;
-		if( time >= 1.0 ){
-			printf( "%f ms/frame\n", double( nbframes ) );
-			nbframes = 0;
-			lasttime += 1.0;
-		}
-
+		checkKeyState( window );
 		{
 			glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 			glfwGetCursorPos( window, &xpos, &ypos );
@@ -279,25 +271,37 @@ int main( void )
 			glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
 			glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
 
+			// turning cubes by increase degree
 			degree += 0.01;
 			if( degree > 360 )
 				degree = 0;
 
+			// move Cubes
 			//z1 += speed1;
 			//if( z1 > 10 || z1 < -50 )
 			//	speed1 = -speed1;
-
 			//z2 += speed2;
 			//if( z2 > 40 || z2 < -40 )
 			//	speed2 = -speed2;
-
 			//z3 += speed3;
 			//if( z3 > 50 || z3 < -50 )
 			//	speed3 = -speed3;
-
-			glfwSwapBuffers( window );
-			glfwPollEvents();
 		}
+
+
+		// Measure speed
+		double currentTime = glfwGetTime();
+		nbframes++;
+		time = currentTime - lastTime;
+		if( time >= 1.0 ){
+			printf( "%f ms/frame\n", double( nbframes ) );
+			nbframes = 0;
+			lastTime += 1.0;
+		}
+		camera.updateDelta(ft.Mark());
+
+		glfwSwapBuffers( window );
+		glfwPollEvents();
 	}
 
 	glBindVertexArray( 0 );
@@ -307,5 +311,26 @@ int main( void )
 	return 0;
 }
 
+void checkKeyState( GLFWwindow* window )
+{
+	if( glfwGetKey( window, GLFW_KEY_W ) ){
+		camera.moveFoward();
+	}
+	if( glfwGetKey( window, GLFW_KEY_S ) ){
+		camera.moveBackward();
+	}
+	if( glfwGetKey( window, GLFW_KEY_A ) ){
+		camera.strafeLeft();
+	}
+	if( glfwGetKey( window, GLFW_KEY_D ) ){
+		camera.strafeRight();
+	}
+	if( glfwGetKey( window, GLFW_KEY_R ) ){
+		camera.moveUp();
+	}
+	if( glfwGetKey( window, GLFW_KEY_F ) ){
+		camera.moveDown();
+	}
+}
 
 // working BOOOOOM
