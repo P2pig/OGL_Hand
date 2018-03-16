@@ -1,3 +1,4 @@
+#include <windows.h>
 #include <GL\glew.h>
 #include <GLFW\glfw3.h>
 
@@ -17,8 +18,6 @@
 #define GLCall(x) GLClearError();\
 	x;\
 	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
-
-void key_callback( GLFWwindow* window, int key, int scancode, int action, int mods );
 
 static void GLClearError()
 {
@@ -125,7 +124,6 @@ int main( void )
 
 	/* Create a windowed mode window and its OpenGL context */
 	window = glfwCreateWindow( 800, 600, "Sup Cubes :D", NULL, NULL );
-	glfwSetKeyCallback( window, key_callback );
 
 	if( !window )
 	{
@@ -140,7 +138,7 @@ int main( void )
 	if( glewInit() != GLEW_OK )
 		std::cout << "ERROR!! GLEW INIT FAILED" << std::endl;
 
-	glfwSwapInterval( 1 );
+	glfwSwapInterval( 0 );
 	glEnable( GL_DEPTH_TEST );
 	_INFO_COMPILER();
 	_INFO_OPENGL();
@@ -214,7 +212,6 @@ int main( void )
 	float degree = 0;
 	using namespace glm;
 
-	double lastTime = glfwGetTime();
 	int nbFrames = 0;
 	FrameTimer ft;
 	float z1 = 0.0f;
@@ -228,109 +225,87 @@ int main( void )
 	int t = 0;
 	double xpos, ypos;
 
+	mat4 TMatrix;
+	mat4 RMatrix;
+	mat4 Projection;
+
+	float time;
+	double lastTime;
+	int nbframes = 0;
+	double lasttime = glfwGetTime();
+
+
 	glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
 	while( !glfwWindowShouldClose( window ) && !glfwGetKey( window, GLFW_KEY_ESCAPE ) )
 	{
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		glfwGetCursorPos( window, &xpos, &ypos );
-		camera.MouseUpdate( vec2( xpos, ypos ) );
 
-		// cube:1
-		mat4 TMatrix = translate( mat4( 1.0f ), vec3( 0.0f, 0.0f, z1 + 0.0f ) );
-		mat4 RMatrix = rotate( mat4( 1.0f ), 45.0f + degree, vec3( 0.1f, 0.1f, 0.0f ) );
-		mat4 Projection = perspective( radians( 60.0f ), 4.0f / 3.0f, 0.1f, 100.0f );
+		// Measure speed
+		double currentTime = glfwGetTime();
+		nbframes++;
+		time = currentTime - lasttime;
+		if( time >= 1.0 ){
+			printf( "%f ms/frame\n", double( nbframes ) );
+			nbframes = 0;
+			lasttime += 1.0;
+		}
 
-		mat4 Camera = Projection * camera.GetMatrix();
-		mat4 fullTransform = Camera * TMatrix * RMatrix;
-		glUniformMatrix4fv( glGetUniformLocation( shader, "fullTransform" ), 1, 0, &fullTransform[ 0 ][ 0 ] );
+		{
+			glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+			glfwGetCursorPos( window, &xpos, &ypos );
+			camera.MouseUpdate( vec2( xpos, ypos ) );
 
-		glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
+			Projection = perspective( radians( 60.0f ), 4.0f / 3.0f, 0.1f, 100.0f );
+			glUniformMatrix4fv( glGetUniformLocation( shader, "Projection" ), 1, 0, &Projection[ 0 ][ 0 ] );
+			glUniformMatrix4fv( glGetUniformLocation( shader, "View" ), 1, 0, &camera.View()[ 0 ][ 0 ] );
 
-		// cube:2
-		TMatrix = translate( mat4( 1.0f ), vec3( 3.0f, 0.0f, z2 + 30.0f ) );
-		RMatrix = rotate( mat4( 1.0f ), 45.0f-degree, vec3( 0.1f, 0.0f, 0.0f ) );
-		glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
-		glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
+			// cube:1
+			TMatrix = translate( mat4( 1.0f ), vec3( 0.0f, 0.0f, z1 ) );
+			RMatrix = rotate( mat4( 1.0f ), 45.0f + degree, vec3( 0.1f, 0.1f, 0.0f ) );
+			glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
+			glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
+			glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
 
-		fullTransform = Camera * TMatrix * RMatrix;
-		glUniformMatrix4fv( glGetUniformLocation( shader, "fullTransform" ), 1, 0, &fullTransform[ 0 ][ 0 ] );
+			// cube:2
+			TMatrix = translate( mat4( 1.0f ), vec3( 3.0f, 0.0f, z2 ) );
+			RMatrix = rotate( mat4( 1.0f ), 45.0f - degree, vec3( 0.1f, 0.0f, 0.0f ) );
+			glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
+			glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
+			glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
 
-		glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
+			// cube:3
+			TMatrix = translate( mat4( 1.0f ), vec3( 1.5f, 1.5f, z3 ) );
+			RMatrix = rotate( mat4( 1.0f ), (45.0f - degree), vec3( 0.5f, -0.075f, 0.0f ) );
+			glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
+			glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
+			glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
 
-		// cube:3
-		TMatrix = translate( mat4( 1.0f ), vec3( -5.0f, 2.5f,  z3) );
-		RMatrix = rotate( mat4( 1.0f ), (45.0f - degree*2.0f), vec3( 0.5f, -0.075f, 0.0f ) );
-		glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
-		glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
+			degree += 0.01;
+			if( degree > 360 )
+				degree = 0;
 
-		fullTransform = Camera * TMatrix * RMatrix;
-		glUniformMatrix4fv( glGetUniformLocation( shader, "fullTransform" ), 1, 0, &fullTransform[ 0 ][ 0 ] );
+			//z1 += speed1;
+			//if( z1 > 10 || z1 < -50 )
+			//	speed1 = -speed1;
 
-		glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
+			//z2 += speed2;
+			//if( z2 > 40 || z2 < -40 )
+			//	speed2 = -speed2;
 
-		degree += 0.2;
-		if( degree > 360 )
-			degree = 0;
+			//z3 += speed3;
+			//if( z3 > 50 || z3 < -50 )
+			//	speed3 = -speed3;
 
-		z1 += speed1;
-		if( z1 > 10 || z1 < -50 )
-			speed1 = -speed1;
-
-		z2 += speed2;
-		if( z2 > 40 || z2 < -40 )
-			speed2 = -speed2;
-
-		z3 += speed3;
-		if( z3 > 50 || z3 < -50 )
-			speed3 = -speed3;
-
-
-		//// Measure speed
-		//double currentTime = glfwGetTime();
-		//nbFrames++;
-
-		//// If last prinf() was more than 1 sec ago
-		//// printf and reset timer
-		//if( currentTime - lastTime >= 1.0 ){
-		//	printf( "%f ms/frame\n", double( nbFrames ) );
-		//	nbFrames = 0;
-		//	lastTime += 1.0;
-		//}
-
-		glfwSwapBuffers( window );
-		glfwPollEvents();
+			glfwSwapBuffers( window );
+			glfwPollEvents();
+		}
 	}
 
 	glBindVertexArray( 0 );
-
 	glDeleteProgram( shader );
 
 	glfwTerminate();
 	return 0;
 }
-void key_callback( GLFWwindow* window, int key, int scancode, int action, int mods )
-{
-	switch( key )
-	{
-	case GLFW_KEY_W:
-		camera.moveFoward();
-		break;
-	case GLFW_KEY_S:
-		camera.moveBackward();
-		break;
-	case GLFW_KEY_A:
-		camera.strafeLeft();
-		break;
-	case GLFW_KEY_D:
-		camera.strafeRight();
-		break;
-	case GLFW_KEY_R:
-		camera.moveUp();
-		break;
-	case GLFW_KEY_F:
-		camera.moveDown();
-		break;
-	}
-}
+
 
 // working BOOOOOM

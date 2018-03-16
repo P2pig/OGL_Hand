@@ -20,7 +20,7 @@ void Camera::MouseUpdate( const glm::vec2 & mousePos_new )
 	mousePos_old = mousePos_new;
 }
 
-glm::mat4 Camera::GetMatrix() const
+glm::mat4 Camera::View() const
 {
 	return glm::lookAt( position, (position + viewDirection), UP );
 }
