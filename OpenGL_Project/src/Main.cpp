@@ -142,6 +142,7 @@ int main( void )
 
 	glfwSwapInterval( 0 );
 	glEnable( GL_DEPTH_TEST );
+	glEnable( GL_CULL_FACE );
 	_INFO_COMPILER();
 	_INFO_OPENGL();
 
@@ -169,20 +170,20 @@ int main( void )
 		// front & back
 		0, 1, 2,
 		0, 2, 3,
-		4, 5, 6,
-		4, 6, 7,
+		7 ,6, 5,
+		7, 5, 4,
 
 		// top & bot
 		4, 0, 3,
 		4, 3, 7,
-		5, 1, 2,
-		5, 2, 6,
+		1, 5, 6,
+		1, 6, 2,
 
 		// lef & right
-		0, 4, 5,
-		0, 5, 1,
-		3, 7, 6,
-		3, 6, 2
+		4, 5, 1,
+		4, 1, 0,
+		3, 2, 6,
+		3, 6, 7
 	};
 
 	unsigned int vao;
@@ -247,6 +248,7 @@ int main( void )
 			camera.MouseUpdate( vec2( xpos, ypos ) );
 
 			Projection = perspective( radians( 60.0f ), 4.0f / 3.0f, 0.1f, 100.0f );
+			glGetUniformLocation( shader, "Projection" );
 			glUniformMatrix4fv( glGetUniformLocation( shader, "Projection" ), 1, 0, &Projection[ 0 ][ 0 ] );
 			glUniformMatrix4fv( glGetUniformLocation( shader, "View" ), 1, 0, &camera.View()[ 0 ][ 0 ] );
 
@@ -255,8 +257,8 @@ int main( void )
 			RMatrix = rotate( mat4( 1.0f ), 45.0f + degree, vec3( 0.1f, 0.1f, 0.0f ) );
 			glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
 			glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
-			glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
-
+			glDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr );
+			
 			// cube:2
 			TMatrix = translate( mat4( 1.0f ), vec3( 3.0f, 0.0f, z2 ) );
 			RMatrix = rotate( mat4( 1.0f ), 45.0f - degree, vec3( 0.1f, 0.0f, 0.0f ) );
