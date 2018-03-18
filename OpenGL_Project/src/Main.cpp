@@ -241,6 +241,16 @@ int main( void )
 	glfwSetInputMode( window, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
 	while( !glfwWindowShouldClose( window ) && !glfwGetKey( window, GLFW_KEY_ESCAPE ) )
 	{
+		// Measure speed
+		//double currentTime = glfwGetTime();
+		//nbframes++;
+		//time = currentTime - lastTime;
+		//if( time >= 1.0 ){
+		//	printf( "%f ms/frame\n", double( nbframes ) );
+		//	nbframes = 0;
+		//	lastTime += 1.0;
+		//}
+
 		checkKeyState( window );
 		{
 			glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -253,30 +263,26 @@ int main( void )
 			glUniformMatrix4fv( glGetUniformLocation( shader, "View" ), 1, 0, &camera.View()[ 0 ][ 0 ] );
 
 			// cube:1
-			TMatrix = translate( mat4( 1.0f ), vec3( 0.0f, 0.0f, z1 ) );
-			RMatrix = rotate( mat4( 1.0f ), 45.0f + degree, vec3( 0.1f, 0.1f, 0.0f ) );
+			TMatrix = translate( mat4( 1.0f ), vec3( 0.0f, 0.0f, 0 ) );
+			RMatrix = rotate( mat4( 1.0f ), degree, vec3( 0.1f, 0.1f, 0.0f ) );
 			glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
 			glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
 			glDrawElements( GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr );
-			
+
 			// cube:2
-			TMatrix = translate( mat4( 1.0f ), vec3( 3.0f, 0.0f, z2 ) );
-			RMatrix = rotate( mat4( 1.0f ), 45.0f - degree, vec3( 0.1f, 0.0f, 0.0f ) );
+			TMatrix = translate( mat4( 1.0f ), vec3( 3.0f, 0.0f, 0 ) );
+			RMatrix = rotate( mat4( 1.0f ), -degree, vec3( 0.1f, 0.0f, 0.0f ) );
 			glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
 			glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
 			glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
 
 			// cube:3
-			TMatrix = translate( mat4( 1.0f ), vec3( 1.5f, 1.5f, z3 ) );
-			RMatrix = rotate( mat4( 1.0f ), (45.0f - degree), vec3( 0.5f, -0.075f, 0.0f ) );
+			TMatrix = translate( mat4( 1.0f ), vec3( 1.5f, 1.5f, 0 ) );
+			RMatrix = rotate( mat4( 1.0f ), degree, vec3( 0.5f, -0.075f, 0.0f ) );
 			glUniformMatrix4fv( glGetUniformLocation( shader, "TMatrix" ), 1, 0, &TMatrix[ 0 ][ 0 ] );
 			glUniformMatrix4fv( glGetUniformLocation( shader, "RMatrix" ), 1, 0, &RMatrix[ 0 ][ 0 ] );
 			glDrawElements( GL_TRIANGLES, sizeof( Indices ) / sizeof( unsigned int ), GL_UNSIGNED_INT, nullptr );
 
-			// turning cubes by increase degree
-			degree += 0.01;
-			if( degree > 360 )
-				degree = 0;
 
 			// move Cubes
 			//z1 += speed1;
@@ -289,18 +295,16 @@ int main( void )
 			//if( z3 > 50 || z3 < -50 )
 			//	speed3 = -speed3;
 		}
-
-
-		// Measure speed
-		double currentTime = glfwGetTime();
-		nbframes++;
-		time = currentTime - lastTime;
-		if( time >= 1.0 ){
-			printf( "%f ms/frame\n", double( nbframes ) );
-			nbframes = 0;
-			lastTime += 1.0;
+		{
+		// update by delta time
+		float deltaTime = ft.Mark();
+		// turning cubes by increase degree
+		degree += 1 * deltaTime;
+		if( degree > 360 )
+			degree = 0;
+		camera.updateDelta( deltaTime ); 
 		}
-		camera.updateDelta(ft.Mark());
+
 
 		glfwSwapBuffers( window );
 		glfwPollEvents();
